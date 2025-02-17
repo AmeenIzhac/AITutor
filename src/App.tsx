@@ -11,7 +11,13 @@ posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
   },
   capture_pageview: true, // Tracks pageviews automatically
   capture_performance: true, // Tracks performance
-  disable_session_recording: false // Enables session recording
+  disable_session_recording: false, // Enables session recording
+  session_recording: {
+    maskAllInputs: false,
+    maskInputOptions: {
+        password: true
+    }
+  }
 });
 
 const openai = new OpenAI({
