@@ -68,11 +68,36 @@ function App() {
       };
       setMessages(prev => [...prev, streamingMessage]);
 
+      // Create conversation history from previous messages
+      const conversationHistory = messages
+        .filter(msg => !msg.streaming) // Exclude any currently streaming message
+        .map(msg => {
+          if (msg.type === 'user' && msg.image) {
+            return {
+              role: 'user',
+              content: [
+                { type: "text", text: msg.content },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: msg.image,
+                  },
+                },
+              ],
+            };
+          }
+          return {
+            role: msg.type === 'user' ? 'user' : 'assistant',
+            content: msg.content
+          };
+        });
+
       let response;
       if (imageUrl) {
         response = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
+            ...conversationHistory,
             {
               role: "user",
               content: [
@@ -91,12 +116,16 @@ function App() {
         });
       } else {
         response = await openai.chat.completions.create({
-          model: "gpt-4",
-          messages: [{ role: "user", content }],
+          model: "gpt-4o-mini",
+          messages: [
+            ...conversationHistory,
+            { role: "user", content }
+          ],
           max_tokens: 500,
           stream: true,
         });
       }
+      console.log(messages)
 
       let fullContent = '';
       for await (const chunk of response) {
@@ -138,7 +167,7 @@ function App() {
       const newMessage: Message = {
         id: Date.now().toString(),
         type: 'user',
-        content: input.trim() || 'What do you see in this image?',
+        content: input.trim() || '',
         image: tempImage || undefined,
       };
       setMessages(prev => [...prev, newMessage]);
@@ -218,14 +247,14 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl bg-white rounded-lg shadow-xl overflow-hidden">
+      <div className="w-full max-w-4xl h-[800px] bg-white rounded-lg shadow-xl overflow-hidden flex flex-col">
         <div className="p-4 bg-indigo-600">
           <h1 className="text-2xl font-bold text-white">AI Tutor</h1>
         </div>
         
         <div 
           ref={chatContainerRef}
-          className="h-[600px] overflow-y-auto p-4 space-y-4"
+          className="flex-1 overflow-y-auto p-4 space-y-4"
         >
           {messages.map((message) => (
             <div
@@ -265,7 +294,7 @@ function App() {
               <img
                 src={tempImage}
                 alt="Preview"
-                className="max-h-32 rounded-lg"
+                className="max-h-32 w-auto object-contain rounded-lg"
               />
               <button
                 onClick={handleRemoveImage}
