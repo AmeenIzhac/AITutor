@@ -246,11 +246,11 @@ function App() {
   }, []);
 
   return (
-    <div className="h-screen bg-[#1A1A1A] flex items-center justify-center">
-      <div className="w-full h-full bg-[#1A1A1A] flex flex-col">
+    <div className="h-screen bg-[#212121] flex items-center justify-center">
+      <div className="w-full h-full bg-[#212121] flex flex-col">
         <div 
           ref={chatContainerRef}
-          className="flex-1 overflow-y-auto px-96 py-4 space-y-4"
+          className="flex-1 overflow-y-auto px-96 py-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
         >
           {messages.map((message) => (
             <div
@@ -260,7 +260,7 @@ function App() {
               }`}
             >
               {message.image && (
-                <div className="mb-2">
+                <div className="mb-2 w-full flex justify-end">
                   <img
                     src={message.image}
                     alt="Uploaded content"
@@ -270,13 +270,13 @@ function App() {
               )}
               {(message.content || message.streaming) && (
                 <div
-                  className={`max-w-[70%] rounded-2xl p-3 ${
+                  className={`${
                     message.type === 'user'
-                      ? 'bg-[#3E3F4B] text-white'
-                      : 'text-white'
-                  }`}
+                      ? 'max-w-[70%] bg-[#303030] text-[#ECECEC] ml-auto'
+                      : 'w-full text-[#ECECEC]'
+                  } rounded-3xl px-5 py-3`}
                 >
-                  <p className="text-sm">
+                  <p className="text-[15px] leading-relaxed">
                     {message.content}
                     {message.streaming && message.type === 'bot' && '▊'}
                   </p>
@@ -286,52 +286,59 @@ function App() {
           ))}
         </div>
 
-        <div className="px-96 py-4">
-          {tempImage && (
-            <div className="mb-4 relative inline-block">
-              <img
-                src={tempImage}
-                alt="Preview"
-                className="max-h-32 w-auto object-contain rounded-lg"
-              />
-              <button
-                onClick={handleRemoveImage}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                title="Remove image"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
+        <div className="px-96 pb-1 pt-4">
+          <div className="bg-[#2C2C2C] rounded-3xl overflow-hidden">
+            {tempImage && (
+              <div className="relative p-4 pl-6">
+                <div className="relative inline-block">
+                  <img
+                    src={tempImage}
+                    alt="Preview"
+                    className="h-16 w-16 object-cover rounded-lg"
                   />
-                </svg>
-              </button>
+                  <button
+                    onClick={handleRemoveImage}
+                    className="absolute -top-1.5 -right-1.5 bg-gray-700 text-gray-300 rounded-full p-0.5 hover:bg-gray-600 hover:text-white"
+                    title="Remove image"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+            <div className="flex items-center p-3">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Ask anything"
+                className="w-full bg-transparent text-white focus:outline-none focus:ring-0 placeholder-[#9B9B9B] pl-4"
+                disabled={isLoading}
+              />
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="hidden"
+              />
             </div>
-          )}
-          <div className="flex items-center">
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask anything"
-              className="w-full p-4 bg-[#2C2C2C] text-white rounded-full focus:outline-none focus:ring-0 placeholder-gray-400"
-              disabled={isLoading}
-            />
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageUpload}
-              accept="image/*"
-              className="hidden"
-            />
+          </div>
+          <div className="text-center mt-1">
+            <span className="text-[11px] text-[#9B9B9B]">ChatGPT can make mistakes. Check important info.</span>
           </div>
         </div>
       </div>
