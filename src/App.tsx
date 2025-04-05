@@ -246,49 +246,47 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl h-[800px] bg-white rounded-lg shadow-xl overflow-hidden flex flex-col">
-        <div className="p-4 bg-indigo-600">
-          <h1 className="text-2xl font-bold text-white">AI Tutor</h1>
-        </div>
-        
+    <div className="h-screen bg-[#1A1A1A] flex items-center justify-center">
+      <div className="w-full h-full bg-[#1A1A1A] flex flex-col">
         <div 
           ref={chatContainerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4"
+          className="flex-1 overflow-y-auto px-96 py-4 space-y-4"
         >
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${
-                message.type === 'user' ? 'justify-end' : 'justify-start'
+              className={`flex flex-col ${
+                message.type === 'user' ? 'items-end' : 'items-start'
               }`}
             >
-              <div
-                className={`max-w-[70%] rounded-lg p-4 ${
-                  message.type === 'user'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-800'
-                }`}
-              >
-                <p className="text-sm">
-                  {message.content}
-                  {message.streaming && message.type === 'bot' && '▊'}
-                </p>
-                {message.image && (
-                  <div className="mt-2">
-                    <img
-                      src={message.image}
-                      alt="Uploaded content"
-                      className="max-w-full rounded-lg"
-                    />
-                  </div>
-                )}
-              </div>
+              {message.image && (
+                <div className="mb-2">
+                  <img
+                    src={message.image}
+                    alt="Uploaded content"
+                    className="max-w-[70%] rounded-lg"
+                  />
+                </div>
+              )}
+              {(message.content || message.streaming) && (
+                <div
+                  className={`max-w-[70%] rounded-2xl p-3 ${
+                    message.type === 'user'
+                      ? 'bg-[#3E3F4B] text-white'
+                      : 'text-white'
+                  }`}
+                >
+                  <p className="text-sm">
+                    {message.content}
+                    {message.streaming && message.type === 'bot' && '▊'}
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>
 
-        <div className="p-4 border-t border-gray-200">
+        <div className="px-96 py-4">
           {tempImage && (
             <div className="mb-4 relative inline-block">
               <img
@@ -316,34 +314,17 @@ function App() {
               </button>
             </div>
           )}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center">
             <input
               ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder={tempImage ? "Add a message or press Enter" : "Type your message or paste an image (Ctrl+V)..."}
-              className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Ask anything"
+              className="w-full p-4 bg-[#2C2C2C] text-white rounded-full focus:outline-none focus:ring-0 placeholder-gray-400"
               disabled={isLoading}
             />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="p-2 text-gray-500 hover:text-indigo-600 transition-colors"
-              title="Upload image"
-              disabled={isLoading || tempImage !== null}
-            >
-              <ImagePlus size={24} />
-            </button>
-            <button
-              onClick={handleSend}
-              className={`p-2 bg-indigo-600 text-white rounded-lg transition-colors ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'
-              }`}
-              disabled={isLoading}
-            >
-              <Send size={24} />
-            </button>
             <input
               type="file"
               ref={fileInputRef}
