@@ -1,369 +1,141 @@
 {
-  "algebra": "branch of mathematics dealing with symbols and rules for manipulating those symbols",
-  "equation": "a mathematical statement showing that two expressions are equal",
-  "variable": "a letter or symbol used to represent an unknown value",
-  "coefficient": "a number used to multiply a variable",
-  "exponent": "a number that shows how many times to multiply a base number by itself",
-  "polynomial": "an expression with variables and coefficients involving only addition, subtraction, and multiplication",
-  "quadratic": "an equation containing a variable raised to the second power",
-  "factor": "a number that divides exactly into another number",
-  "denominator": "the bottom number in a fraction",
-  "numerator": "the top number in a fraction",
-  "radius": "the distance from the center to the edge of a circle",
-  "diameter": "the distance across a circle through its center",
-  "circumference": "the distance around a circle",
-  "perimeter": "the distance around the outside of a shape",
-  "area": "the amount of space inside a 2D shape",
-  "volume": "the amount of space inside a 3D shape",
-  "parallel": "lines that never meet and are always the same distance apart",
-  "perpendicular": "lines that meet at a right angle (90 degrees)",
-  "hypotenuse": "the longest side of a right triangle, opposite the right angle",
-  "pythagoras": "theorem stating that a² + b² = c² in a right triangle",
-  "sine": "ratio of the opposite side to the hypotenuse in a right triangle",
-  "cosine": "ratio of the adjacent side to the hypotenuse in a right triangle",
-  "tangent": "ratio of the opposite side to the adjacent side in a right triangle",
-  "median": "the middle value when data is arranged in order",
-  "mode": "the most frequent value in a dataset",
-  "mean": "the average found by adding all values and dividing by how many values there are",
-  "range": "the difference between the highest and lowest values in a dataset",
-  "probability": "the likelihood of an event happening, expressed from 0 to 1",
-  "prime": "a number with exactly two factors: 1 and itself",
-  "composite": "a number with more than two factors",
-  "integer": "a whole number that can be positive, negative, or zero",
-  "decimal": "a number with a fractional part separated by a point",
-  "percentage": "a number expressed as a fraction of 100",
-  "ratio": "a comparison between two or more related numbers",
-  "proportion": "an equation stating that two ratios are equal",
-  "sequence": "a set of numbers that follow a pattern",
-  "arithmetic": "a sequence where the difference between terms is constant",
-  "geometric": "a sequence where each term is multiplied by a constant",
-  "gradient": "the steepness of a line, calculated as rise over run",
-  "intercept": "the point where a line crosses an axis",
-  "vertex": "a corner point where two or more lines meet",
-  "angle": "the amount of turn between two lines around their common point",
-  "isosceles": "a triangle with two equal sides and two equal angles",
-  "equilateral": "a triangle with all sides equal and all angles equal",
-  "scalene": "a triangle with no equal sides and no equal angles",
-  "congruent": "shapes that are exactly the same size and shape",
-  "similar": "shapes that have the same shape but different sizes",
-  "symmetry": "when a shape can be divided into identical parts",
-  "transformation": "a way of changing the size or position of a shape",
-  "translation": "moving a shape without rotating or flipping it",
-  "rotation": "turning a shape around a fixed point",
-  "reflection": "flipping a shape over a line",
-  "enlargement": "making a shape bigger or smaller by a scale factor",
-  "vector": "a quantity with both direction and magnitude",
-  "matrix": "a rectangular array of numbers arranged in rows and columns",
-  "function": "a rule that assigns exactly one output to each input",
-  "domain": "the set of all possible input values of a function",
-  "range": "the set of all possible output values of a function",
-  "inequality": "a mathematical statement showing the relationship between unequal expressions",
-  "factorial": "the product of all positive integers less than or equal to a number",
-  "reciprocal": "one divided by a number (multiplicative inverse)",
-  "index": "another word for exponent or power",
-  "surd": "an expression involving square roots that cannot be simplified",
-  "irrational": "a number that cannot be written as a simple fraction",
-  "rational": "a number that can be written as a simple fraction",
-  "histogram": "a graph showing continuous data using adjacent rectangles",
-  "frequency": "how often something occurs in a dataset",
-  "correlation": "a measure of the relationship between two variables",
-  "quartile": "values that divide data into four equal parts",
-  "interquartile": "the difference between the upper and lower quartiles",
-  "outlier": "a value that differs significantly from other data points",
-  "discrete": "data that can only take certain values",
-  "continuous": "data that can take any value within a range",
-  "linear": "relating to a straight line or first degree equation",
-  "quadrilateral": "a four-sided polygon",
-  "polygon": "a closed shape with straight sides",
-  "cylinder": "a 3D shape with circular ends and straight sides",
-  "sphere": "a perfectly round 3D shape",
-  "cone": "a 3D shape with a circular base and a pointed top",
-  "prism": "a 3D shape with identical ends and flat faces",
-  "pyramid": "a 3D shape with a polygon base and triangular faces meeting at a point",
-  "entries": [
-    {
-      "word": "radius",
-      "definition": "The distance from the center to the edge of a circle"
-    },
-    {
-      "word": "diameter",
-      "definition": "The distance across a circle through its center"
-    },
-    {
-      "word": "circumference",
-      "definition": "The distance around a circle"
-    },
-    {
-      "word": "perimeter",
-      "definition": "The distance around the outside of a shape"
-    },
-    {
-      "word": "area",
-      "definition": "The amount of space inside a 2D shape"
-    },
-    {
-      "word": "volume",
-      "definition": "The amount of space inside a 3D shape"
-    },
-    {
-      "word": "parallel",
-      "definition": "Lines that never meet and are always the same distance apart"
-    },
-    {
-      "word": "perpendicular",
-      "definition": "Lines that meet at a right angle (90 degrees)"
-    },
-    {
-      "word": "hypotenuse",
-      "definition": "The longest side of a right triangle, opposite the right angle"
-    },
-    {
-      "word": "pythagoras",
-      "definition": "Theorem stating that a² + b² = c² in a right triangle"
-    },
-    {
-      "word": "sine",
-      "definition": "Ratio of the opposite side to the hypotenuse in a right triangle"
-    },
-    {
-      "word": "cosine",
-      "definition": "Ratio of the adjacent side to the hypotenuse in a right triangle"
-    },
-    {
-      "word": "tangent",
-      "definition": "Ratio of the opposite side to the adjacent side in a right triangle"
-    },
-    {
-      "word": "median",
-      "definition": "The middle value when data is arranged in order"
-    },
-    {
-      "word": "mode",
-      "definition": "The most frequent value in a dataset"
-    },
-    {
-      "word": "mean",
-      "definition": "The average found by adding all values and dividing by how many values there are"
-    },
-    {
-      "word": "range",
-      "definition": "The difference between the highest and lowest values in a dataset"
-    },
-    {
-      "word": "probability",
-      "definition": "The likelihood of an event happening, expressed from 0 to 1"
-    },
-    {
-      "word": "prime",
-      "definition": "A number with exactly two factors: 1 and itself"
-    },
-    {
-      "word": "composite",
-      "definition": "A number with more than two factors"
-    },
-    {
-      "word": "integer",
-      "definition": "A whole number that can be positive, negative, or zero"
-    },
-    {
-      "word": "decimal",
-      "definition": "A number with a fractional part separated by a point"
-    },
-    {
-      "word": "percentage",
-      "definition": "A number expressed as a fraction of 100"
-    },
-    {
-      "word": "ratio",
-      "definition": "A comparison between two or more related numbers"
-    },
-    {
-      "word": "proportion",
-      "definition": "An equation stating that two ratios are equal"
-    },
-    {
-      "word": "sequence",
-      "definition": "A set of numbers that follow a pattern"
-    },
-    {
-      "word": "arithmetic",
-      "definition": "A sequence where the difference between terms is constant"
-    },
-    {
-      "word": "geometric",
-      "definition": "A sequence where each term is multiplied by a constant"
-    },
-    {
-      "word": "gradient",
-      "definition": "The steepness of a line, calculated as rise over run"
-    },
-    {
-      "word": "intercept",
-      "definition": "The point where a line crosses an axis"
-    },
-    {
-      "word": "vertex",
-      "definition": "A corner point where two or more lines meet"
-    },
-    {
-      "word": "angle",
-      "definition": "The amount of turn between two lines around their common point"
-    },
-    {
-      "word": "isosceles",
-      "definition": "A triangle with two equal sides and two equal angles"
-    },
-    {
-      "word": "equilateral",
-      "definition": "A triangle with all sides equal and all angles equal"
-    },
-    {
-      "word": "scalene",
-      "definition": "A triangle with no equal sides and no equal angles"
-    },
-    {
-      "word": "congruent",
-      "definition": "Shapes that are exactly the same size and shape"
-    },
-    {
-      "word": "similar",
-      "definition": "Shapes that have the same shape but different sizes"
-    },
-    {
-      "word": "symmetry",
-      "definition": "When a shape can be divided into identical parts"
-    },
-    {
-      "word": "transformation",
-      "definition": "A way of changing the size or position of a shape"
-    },
-    {
-      "word": "translation",
-      "definition": "Moving a shape without rotating or flipping it"
-    },
-    {
-      "word": "rotation",
-      "definition": "Turning a shape around a fixed point"
-    },
-    {
-      "word": "reflection",
-      "definition": "Flipping a shape over a line"
-    },
-    {
-      "word": "enlargement",
-      "definition": "Making a shape bigger or smaller by a scale factor"
-    },
-    {
-      "word": "vector",
-      "definition": "A quantity with both direction and magnitude"
-    },
-    {
-      "word": "matrix",
-      "definition": "A rectangular array of numbers arranged in rows and columns"
-    },
-    {
-      "word": "function",
-      "definition": "A rule that assigns exactly one output to each input"
-    },
-    {
-      "word": "domain",
-      "definition": "The set of all possible input values of a function"
-    },
-    {
-      "word": "range",
-      "definition": "The set of all possible output values of a function"
-    },
-    {
-      "word": "inequality",
-      "definition": "A mathematical statement showing the relationship between unequal expressions"
-    },
-    {
-      "word": "factorial",
-      "definition": "The product of all positive integers less than or equal to a number"
-    },
-    {
-      "word": "reciprocal",
-      "definition": "One divided by a number (multiplicative inverse)"
-    },
-    {
-      "word": "index",
-      "definition": "Another word for exponent or power"
-    },
-    {
-      "word": "surd",
-      "definition": "An expression involving square roots that cannot be simplified"
-    },
-    {
-      "word": "irrational",
-      "definition": "A number that cannot be written as a simple fraction"
-    },
-    {
-      "word": "rational",
-      "definition": "A number that can be written as a simple fraction"
-    },
-    {
-      "word": "histogram",
-      "definition": "A graph showing continuous data using adjacent rectangles"
-    },
-    {
-      "word": "frequency",
-      "definition": "How often something occurs in a dataset"
-    },
-    {
-      "word": "correlation",
-      "definition": "A measure of the relationship between two variables"
-    },
-    {
-      "word": "quartile",
-      "definition": "Values that divide data into four equal parts"
-    },
-    {
-      "word": "interquartile",
-      "definition": "The difference between the upper and lower quartiles"
-    },
-    {
-      "word": "outlier",
-      "definition": "A value that differs significantly from other data points"
-    },
-    {
-      "word": "discrete",
-      "definition": "Data that can only take certain values"
-    },
-    {
-      "word": "continuous",
-      "definition": "Data that can take any value within a range"
-    },
-    {
-      "word": "linear",
-      "definition": "Relating to a straight line or first degree equation"
-    },
-    {
-      "word": "quadrilateral",
-      "definition": "A four-sided polygon"
-    },
-    {
-      "word": "polygon",
-      "definition": "A closed shape with straight sides"
-    },
-    {
-      "word": "cylinder",
-      "definition": "A 3D shape with circular ends and straight sides"
-    },
-    {
-      "word": "sphere",
-      "definition": "A perfectly round 3D shape"
-    },
-    {
-      "word": "cone",
-      "definition": "A 3D shape with a circular base and a pointed top"
-    },
-    {
-      "word": "prism",
-      "definition": "A 3D shape with identical ends and flat faces"
-    },
-    {
-      "word": "pyramid",
-      "definition": "A 3D shape with a polygon base and triangular faces meeting at a point"
-    }
-  ]
+  "algebra": {"definition":"A branch of mathematics that uses letters and symbols to represent numbers and quantities in formulas and equations"},
+  "axis": {"definition":"A reference line from which distances or angles are measured"},
+  "coefficient": {"definition":"A number used to multiply a variable"},
+  "denominator": {"definition":"The bottom number in a fraction"},
+  "equation": {"definition":"A mathematical statement showing that two expressions are equal"},
+  "exponent": {"definition":"A number that shows how many times a number is multiplied by itself"},
+  "factor": {"definition":"A number that divides exactly into another number"},
+  "fraction": {"definition":"A number expressed as one number divided by another"},
+  "gradient": {"definition":"The steepness or slope of a line"},
+  "integer": {"definition":"A whole number that can be positive, negative, or zero"},
+  "median": {"definition":"The middle value in an ordered set of numbers"},
+  "numerator": {"definition":"The top number in a fraction"},
+  "parallel": {"definition":"Lines that stay the same distance apart and never meet"},
+  "perpendicular": {"definition":"Lines that meet at a right angle (90 degrees)"},
+  "polynomial": {"definition":"An expression with variables and coefficients involving only addition, subtraction, and multiplication"},
+  "quadratic": {"definition":"An equation containing a variable raised to the power of 2"},
+  "quotient": {"definition":"The result of dividing one number by another"},
+  "radius": {"definition":"The distance from the center to any point on a circle",
+             "imageUrl": "https://www.learningstreet.co.uk/wp-content/uploads/2017/05/Screen-Shot-2017-05-23-at-17.00.42-300x223.png"},
+  "sequence": {"definition":"A set of numbers that follow a pattern"},
+  "variable": {"definition":"A letter or symbol used to represent an unknown value"},
+  "abscissa": {"definition":"The x-coordinate of a point in a coordinate system"},
+  "acute": {"definition":"An angle that measures less than 90 degrees"},
+  "adjacent": {"definition":"A side next to an angle in a right triangle"},
+  "alternate": {"definition":"Angles formed when a line intersects two parallel lines"},
+  "amplitude": {"definition":"The maximum distance from the middle of a wave to its peak"},
+  "angle": {"definition":"The amount of rotation between two lines around their common point"},
+  "apex": {"definition":"The highest point or vertex of a shape"},
+  "arc": {"definition":"A portion of the circumference of a circle"},
+  "area": {"definition":"The amount of space inside a two-dimensional shape"},
+  "asymptote": {"definition":"A line that a curve approaches but never touches"},
+  "average": {"definition":"The arithmetic mean of a set of numbers"},
+  "base": {"definition":"The bottom part of a shape or number system"},
+  "bisector": {"definition":"A line that divides something into two equal parts"},
+  "chord": {"definition":"A line segment connecting two points on a circle"},
+  "circle": {"definition":"A round shape where all points are equidistant from the center"},
+  "circumference": {"definition":"The distance around a circle"},
+  "collinear": {"definition":"Points that lie on the same straight line"},
+  "composite": {"definition":"A number with more than two factors"},
+  "concave": {"definition":"Curved inward like the inside of a bowl"},
+  "concurrent": {"definition":"Lines that intersect at a single point"},
+  "cone": {"definition":"A three-dimensional shape with a circular base and pointed top"},
+  "congruent": {"definition":"Shapes that are exactly the same size and shape"},
+  "constant": {"definition":"A value that does not change"},
+  "convex": {"definition":"Curved outward like the outside of a bowl"},
+  "coordinate": {"definition":"A set of numbers that locate a point"},
+  "coplanar": {"definition":"Points or lines that lie in the same plane"},
+  "cosine": {"definition":"A trigonometric ratio relating to right triangles"},
+  "cube": {"definition":"A three-dimensional shape with six equal square faces"},
+  "cylinder": {"definition":"A three-dimensional shape with circular ends and straight sides"},
+  "decimal": {"definition":"A number expressed using base ten notation"},
+  "degree": {"definition":"A unit of measurement for angles"},
+  "diagonal": {"definition":"A line connecting nonadjacent vertices of a polygon"},
+  "diameter": {"definition":"A line segment passing through the center of a circle"},
+  "digit": {"definition":"A single numerical symbol"},
+  "dilation": {"definition":"A transformation that changes the size of a shape"},
+  "dividend": {"definition":"The number being divided in division"},
+  "divisor": {"definition":"The number by which another is divided"},
+  "domain": {"definition":"The set of possible input values for a function"},
+  "edge": {"definition":"The line where two faces of a solid shape meet"},
+  "ellipse": {"definition":"An oval shape that resembles a stretched circle"},
+  "equator": {"definition":"A line that divides a sphere into equal halves"},
+  "factorial": {"definition":"The product of all positive integers up to a given number"},
+  "frequency": {"definition":"The number of times an event occurs in a dataset"},
+  "function": {"definition":"A relation where each input has exactly one output"},
+  "height": {"definition":"The perpendicular distance from base to top"},
+  "hemisphere": {"definition":"Half of a sphere"},
+  "hexagon": {"definition":"A polygon with six sides and angles"},
+  "hypotenuse": {"definition":"The longest side of a right triangle"},
+  "infinity": {"definition":"A quantity without bound or end"},
+  "intercept": {"definition":"The point where a line crosses an axis"},
+  "inverse": {"definition":"A function or operation that reverses another"},
+  "irrational": {"definition":"A number that cannot be expressed as a simple fraction"},
+  "isosceles": {"definition":"A triangle with two equal sides"},
+  "latitude": {"definition":"Distance north or south of the equator"},
+  "logarithm": {"definition":"The power to which a base must be raised"},
+  "magnitude": {"definition":"The size or absolute value of something"},
+  "matrix": {"definition":"A rectangular array of numbers"},
+  "maximum": {"definition":"The greatest value in a set"},
+  "minimum": {"definition":"The smallest value in a set"},
+  "mode": {"definition":"The most frequently occurring value"},
+  "multiple": {"definition":"A number that can be divided by another without a remainder"},
+  "negative": {"definition":"A number less than zero"},
+  "obtuse": {"definition":"An angle greater than 90 degrees but less than 180 degrees"},
+  "octagon": {"definition":"A polygon with eight sides"},
+  "ordinate": {"definition":"The y-coordinate of a point"},
+  "origin": {"definition":"The point where x and y axes intersect"},
+  "parabola": {"definition":"A U-shaped curve formed by a quadratic function"},
+  "pentagon": {"definition":"A polygon with five sides"},
+  "perimeter": {"definition":"The distance around the outside of a shape"},
+  "period": {"definition":"The length of time for one complete cycle"},
+  "pi": {"definition":"The ratio of circumference to diameter of a circle"},
+  "plane": {"definition":"A flat surface extending infinitely in all directions"},
+  "polygon": {"definition":"A closed shape with straight sides"},
+  "positive": {"definition":"A number greater than zero"},
+  "power": {"definition":"The result of multiplying a number by itself"},
+  "prime": {"definition":"A number with exactly two factors"},
+  "prism": {"definition":"A solid with identical ends and flat sides"},
+  "probability": {"definition":"The likelihood of an event occurring"},
+  "product": {"definition":"The result of multiplication"},
+  "proportion": {"definition":"An equation stating two ratios are equal"},
+  "pyramid": {"definition":"A solid with a polygon base and triangular faces"},
+  "pythagorean": {"definition":"Relating to the relationship in right triangles"},
+  "quadrant": {"definition":"One of four regions formed by coordinate axes"},
+  "range": {"definition":"The set of possible output values"},
+  "ratio": {"definition":"A comparison of two numbers by division"},
+  "rational": {"definition":"A number that can be expressed as a fraction"},
+  "ray": {"definition":"A part of a line extending infinitely in one direction"},
+  "reciprocal": {"definition":"One divided by a number"},
+  "rectangle": {"definition":"A quadrilateral with four right angles"},
+  "reflection": {"definition":"A flip of a shape over a line"},
+  "rhombus": {"definition":"A quadrilateral with four equal sides"},
+  "rotation": {"definition":"A turn around a fixed point"},
+  "scalar": {"definition":"A quantity with magnitude but no direction"},
+  "sector": {"definition":"A portion of a circle bounded by two radii"},
+  "segment": {"definition":"A part of a line with two endpoints"},
+  "sine": {"definition":"A trigonometric ratio in right triangles"},
+  "slope": {"definition":"The steepness of a line"},
+  "sphere": {"definition":"A perfectly round three-dimensional object"},
+  "square": {"definition":"A rectangle with four equal sides"},
+  "subset": {"definition":"A set contained within another set"},
+  "sum": {"definition":"The result of addition"},
+  "supplementary": {"definition":"Two angles that add to 180 degrees"},
+  "symmetry": {"definition":"The quality of being identical on opposite sides"},
+  "tangent": {"definition":"A line that touches a curve at one point"},
+  "term": {"definition":"A single number or variable in an expression"},
+  "tessellation": {"definition":"A pattern of shapes with no gaps or overlaps"},
+  "theorem": {"definition":"A statement proven to be true"},
+  "transformation": {"definition":"A change in position, size, or shape"},
+  "translation": {"definition":"A slide of a shape without rotation"},
+  "trapezoid": {"definition":"A quadrilateral with one pair of parallel sides"},
+  "triangle": {"definition":"A polygon with three sides"},
+  "trigonometry": {"definition":"The study of relationships in triangles"},
+  "union": {"definition":"The combination of two sets"},
+  "unit": {"definition":"A standard amount of measurement"},
+  "vector": {"definition":"A quantity with both magnitude and direction"},
+  "vertex": {"definition":"A point where two or more lines meet"},
+  "volume": {"definition":"The amount of space inside a three-dimensional shape"},
+  "width": {"definition":"The distance from side to side"}
 }

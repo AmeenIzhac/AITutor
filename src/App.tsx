@@ -36,7 +36,10 @@ type Message = {
 };
 
 const getTermDefinition = (content: string): string | null => {
-  return dictionary[content] || null;
+  if (content in dictionary) {
+    return dictionary[content]["definition"] || null;
+  }
+  return null;
 };
 
 // Update the highlight style to be fully rounded
@@ -54,11 +57,13 @@ const highlightStyle = {
 // Add these new components before the App component
 interface TooltipProps {
   content: string;
+  imageUrl?: string;
   children: React.ReactNode;
 }
 
-const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
+const Tooltip: React.FC<TooltipProps> = ({ content, imageUrl, children }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [isPositioned, setIsPositioned] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const tooltipRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLSpanElement>(null);
@@ -69,18 +74,37 @@ const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
     const wordRect = containerRef.current.getBoundingClientRect();
     const tooltipRect = tooltipRef.current.getBoundingClientRect();
     
-    // Position tooltip 8px above the word
     const top = wordRect.top - tooltipRect.height - 8;
-    // Center tooltip horizontally over the word
     const left = wordRect.left + (wordRect.width / 2);
 
     setPosition({ top: top + window.scrollY, left });
+    setIsPositioned(true);
   };
 
+  // Add scroll event listener
   useEffect(() => {
     if (isVisible) {
-      // Update position after render to ensure tooltip has correct dimensions
+      const handleScroll = () => {
+        requestAnimationFrame(updatePosition);
+      };
+
+      // Listen for scroll events on the chat container and window
+      const chatContainer = document.querySelector('.overflow-y-auto');
+      if (chatContainer) {
+        chatContainer.addEventListener('scroll', handleScroll, { passive: true });
+      }
+      window.addEventListener('scroll', handleScroll, { passive: true });
+
+      // Initial position
+      setIsPositioned(false);
       requestAnimationFrame(updatePosition);
+
+      return () => {
+        if (chatContainer) {
+          chatContainer.removeEventListener('scroll', handleScroll);
+        }
+        window.removeEventListener('scroll', handleScroll);
+      };
     }
   }, [isVisible]);
 
@@ -89,7 +113,10 @@ const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
       ref={containerRef}
       className="relative inline-block"
       onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
+      onMouseLeave={() => {
+        setIsVisible(false);
+        setIsPositioned(false);
+      }}
     >
       {children}
       {isVisible && (
@@ -100,12 +127,25 @@ const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
             top: `${position.top}px`,
             left: `${position.left}px`,
             transform: 'translateX(-50%)',
-            maxWidth: '200px',
+            maxWidth: imageUrl ? '300px' : '200px',
             border: '1px solid #e2e2e2',
             fontWeight: 400,
-            borderRadius: '999px',  // Fully rounded tooltip
+            borderRadius: '16px',
+            opacity: isPositioned ? 1 : 0,  // Hide until positioned
+            transition: 'opacity 0.1s ease-in-out',
+            pointerEvents: isPositioned ? 'auto' : 'none', // Prevent interaction until positioned
           }}
         >
+          {imageUrl && (
+            <div className="mb-2">
+              <img 
+                src={imageUrl} 
+                alt="Term visualization" 
+                className="w-full rounded-lg"
+                style={{ maxHeight: '150px', objectFit: 'contain' }}
+              />
+            </div>
+          )}
           {content}
           <div
             className="absolute w-2 h-2 bg-white rotate-45"
@@ -127,13 +167,15 @@ const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
 const highlightDefinedTerms = (text: string): JSX.Element[] => {
   const words = text.split(/(\s+)/);
   return words.map((word, index) => {
-    const definition = getTermDefinition(word.trim());
-    if (definition && word.trim()) {
+    const term = dictionary[word.trim()];
+    if (term && word.trim()) {
       return (
-        <Tooltip key={index} content={definition}>
-          <span
-            style={highlightStyle}
-          >
+        <Tooltip 
+          key={index} 
+          content={term.definition}
+          imageUrl={term.imageUrl}
+        >
+          <span style={highlightStyle}>
             {word}
           </span>
         </Tooltip>
