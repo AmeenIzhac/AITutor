@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ImagePlus, Send, Image as ImageIcon } from 'lucide-react';
 import OpenAI from 'openai';
 import posthog from 'posthog-js';
+import dictionary from './dictionary.json';
 
 // Initialize PostHog
 posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
@@ -34,14 +35,128 @@ type Message = {
   streaming?: boolean;
 };
 
+const getTermDefinition = (content: string): string | null => {
+  return dictionary[content] || null;
+};
+
+// Update the highlight style to be fully rounded
+const highlightStyle = {
+  backgroundColor: '#4a9eff',
+  padding: '0 8px',  // Increased horizontal padding
+  borderRadius: '999px',  // Fully rounded
+  cursor: 'help',
+  color: '#000000',
+  fontWeight: 500,
+  display: 'inline-block',
+  lineHeight: '1.5',
+};
+
+// Add these new components before the App component
+interface TooltipProps {
+  content: string;
+  children: React.ReactNode;
+}
+
+const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLSpanElement>(null);
+
+  const updatePosition = () => {
+    if (!containerRef.current || !tooltipRef.current) return;
+    
+    const wordRect = containerRef.current.getBoundingClientRect();
+    const tooltipRect = tooltipRef.current.getBoundingClientRect();
+    
+    // Position tooltip 8px above the word
+    const top = wordRect.top - tooltipRect.height - 8;
+    // Center tooltip horizontally over the word
+    const left = wordRect.left + (wordRect.width / 2);
+
+    setPosition({ top: top + window.scrollY, left });
+  };
+
+  useEffect(() => {
+    if (isVisible) {
+      // Update position after render to ensure tooltip has correct dimensions
+      requestAnimationFrame(updatePosition);
+    }
+  }, [isVisible]);
+
+  return (
+    <span
+      ref={containerRef}
+      className="relative inline-block"
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={() => setIsVisible(false)}
+    >
+      {children}
+      {isVisible && (
+        <div
+          ref={tooltipRef}
+          className="fixed z-50 px-4 py-2 text-sm bg-white text-black shadow-lg"
+          style={{
+            top: `${position.top}px`,
+            left: `${position.left}px`,
+            transform: 'translateX(-50%)',
+            maxWidth: '200px',
+            border: '1px solid #e2e2e2',
+            fontWeight: 400,
+            borderRadius: '999px',  // Fully rounded tooltip
+          }}
+        >
+          {content}
+          <div
+            className="absolute w-2 h-2 bg-white rotate-45"
+            style={{
+              bottom: '-5px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              borderRight: '1px solid #e2e2e2',
+              borderBottom: '1px solid #e2e2e2',
+            }}
+          />
+        </div>
+      )}
+    </span>
+  );
+};
+
+// Update the highlightDefinedTerms function
+const highlightDefinedTerms = (text: string): JSX.Element[] => {
+  const words = text.split(/(\s+)/);
+  return words.map((word, index) => {
+    const definition = getTermDefinition(word.trim());
+    if (definition && word.trim()) {
+      return (
+        <Tooltip key={index} content={definition}>
+          <span
+            style={highlightStyle}
+          >
+            {word}
+          </span>
+        </Tooltip>
+      );
+    }
+    return <React.Fragment key={index}>{word}</React.Fragment>;
+  });
+};
+
+// Add this helper function before the App component
+const splitMessageIntoParts = (content: string): string[] => {
+  return content.split('|||').map(part => part.trim()).filter(part => part.length > 0);
+};
+
 function App() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       type: 'bot',
-      content: 'Hello! How can I help you today? Feel free to send messages, share images, or paste images (Ctrl+V).',
+      content: 'Hello! How can I help you today m9? Feel free to send messages, or paste images (Ctrl+V).',
     },
   ]);
+  const [clickedMessageIds, setClickedMessageIds] = useState<Set<string>>(new Set());
   const [input, setInput] = useState('');
   const [tempImage, setTempImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,6 +182,12 @@ function App() {
         streaming: true
       };
       setMessages(prev => [...prev, streamingMessage]);
+
+      // First, add a system message to guide responses
+      const systemMessage = {
+        role: "system",
+        content: "You are a helpful AI GCSE maths assistant. Use simple language unless necessary. For example don't say 'Open a compass to a reasonable radius' but say 'Open your compass a bit'. Break your response into steps if necessary and between each step add ||| to separate the steps."
+      };
 
       // Create conversation history from previous messages
       const conversationHistory = messages
@@ -97,6 +218,7 @@ function App() {
         response = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
+            systemMessage,
             ...conversationHistory,
             {
               role: "user",
@@ -118,6 +240,7 @@ function App() {
         response = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
+            systemMessage,
             ...conversationHistory,
             { role: "user", content }
           ],
@@ -125,11 +248,11 @@ function App() {
           stream: true,
         });
       }
-      console.log(messages)
 
       let fullContent = '';
       for await (const chunk of response) {
         const content = chunk.choices[0]?.delta?.content || '';
+        const definition = getTermDefinition(content);
         fullContent += content;
         
         setMessages(prev => prev.map(msg => 
@@ -150,7 +273,7 @@ function App() {
       posthog.capture('api_error', {
         error: error.message
       });
-      console.error('Error processing message:', error);
+
       const errorMessage: Message = {
         id: Date.now().toString(),
         type: 'bot',
@@ -257,7 +380,7 @@ function App() {
               key={message.id}
               className={`flex flex-col ${
                 message.type === 'user' ? 'items-end' : 'items-start'
-              }`}
+              } space-y-2`}
             >
               {message.image && (
                 <div className="mb-2 w-full flex justify-end">
@@ -268,18 +391,47 @@ function App() {
                   />
                 </div>
               )}
-              {(message.content || message.streaming) && (
+              {message.type === 'user' ? (
+                // User message - single bubble
                 <div
-                  className={`${
-                    message.type === 'user'
-                      ? 'max-w-[70%] bg-[#303030] text-[#ECECEC] ml-auto'
-                      : 'w-full text-[#ECECEC]'
-                  } rounded-3xl px-5 py-3`}
+                  className="max-w-[70%] bg-[#303030] text-[#ECECEC] ml-auto rounded-3xl px-5 py-3"
                 >
                   <p className="text-[15px] leading-relaxed">
                     {message.content}
-                    {message.streaming && message.type === 'bot' && '▊'}
                   </p>
+                </div>
+              ) : (
+                // Bot message - potentially multiple bubbles
+                splitMessageIntoParts(message.content).map((part, index) => (
+                  <div
+                    key={`${message.id}-${index}`}
+                    className={`max-w-[70%] bg-white text-black rounded-3xl px-5 py-3 shadow-sm transition-colors duration-200 
+                      ${clickedMessageIds.has(`${message.id}-${index}`) 
+                        ? 'bg-green-300' 
+                        : 'hover:bg-green-100'
+                      } cursor-pointer`}
+                    onClick={() => {
+                      setClickedMessageIds(prev => {
+                        const newSet = new Set(prev);
+                        const messageKey = `${message.id}-${index}`;
+                        if (newSet.has(messageKey)) {
+                          newSet.delete(messageKey);
+                        } else {
+                          newSet.add(messageKey);
+                        }
+                        return newSet;
+                      });
+                    }}
+                  >
+                    <p className="text-[15px] leading-relaxed">
+                      {highlightDefinedTerms(part)}
+                    </p>
+                  </div>
+                ))
+              )}
+              {message.streaming && message.type === 'bot' && (
+                <div className="max-w-[70%] bg-white text-black rounded-3xl px-5 py-3 shadow-sm">
+                  <p className="text-[15px] leading-relaxed">▊</p>
                 </div>
               )}
             </div>
