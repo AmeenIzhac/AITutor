@@ -190,6 +190,67 @@ const splitMessageIntoParts = (content: string): string[] => {
   return content.split('|||').map(part => part.trim()).filter(part => part.length > 0);
 };
 
+// Add this new component before the App component
+const WebcamFeed = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+
+    async function setupWebcam() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            aspectRatio: 16/9
+          } 
+        });
+        
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.log('Webcam error:', err);
+        setError('Camera access denied or not available');
+      }
+    }
+
+    setupWebcam();
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  return (
+    <div className="w-1/2 h-screen fixed right-0 bg-black flex items-center">
+      {error ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="bg-red-500/90 text-white p-4 rounded-lg text-sm">
+            {error}
+          </div>
+        </div>
+      ) : (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full"
+          style={{
+            transform: 'scaleX(-1)', // Mirror the video
+            objectFit: 'contain', // This will maintain aspect ratio with black bars
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
 function App() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -411,11 +472,19 @@ function App() {
   }, []);
 
   return (
-    <div className="h-screen bg-[#212121] flex items-center justify-center">
-      <div className="w-full h-full bg-[#212121] flex flex-col">
+    <div className="h-screen bg-[#212121] flex">
+      {/* Chat section - left half */}
+      <div className="w-1/2 h-full bg-[#212121] flex flex-col">
         <div 
           ref={chatContainerRef}
-          className="flex-1 overflow-y-auto px-96 py-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
+          className="flex-1 overflow-y-auto px-8 py-4 space-y-4 
+            scrollbar scrollbar-w-2 scrollbar-track-transparent scrollbar-thumb-[#4a4a4a] hover:scrollbar-thumb-[#5a5a5a]
+            [&::-webkit-scrollbar]:w-[6px]
+            [&::-webkit-scrollbar-track]:bg-transparent
+            [&::-webkit-scrollbar-thumb]:bg-[#4a4a4a]
+            [&::-webkit-scrollbar-thumb]:rounded-full
+            [&::-webkit-scrollbar-thumb]:hover:bg-[#5a5a5a]
+            [&::-webkit-scrollbar]:hover:w-[6px]"
         >
           {messages.map((message) => (
             <div
@@ -480,7 +549,7 @@ function App() {
           ))}
         </div>
 
-        <div className="px-96 pb-1 pt-4">
+        <div className="px-8 pb-1 pt-4">
           <div className="bg-[#2C2C2C] rounded-3xl overflow-hidden">
             {tempImage && (
               <div className="relative p-4 pl-6">
@@ -536,6 +605,9 @@ function App() {
           </div>
         </div>
       </div>
+
+      {/* Webcam section - right half */}
+      <WebcamFeed />
     </div>
   );
 }
