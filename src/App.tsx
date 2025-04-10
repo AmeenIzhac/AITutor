@@ -289,7 +289,8 @@ function App() {
       // First, add a system message to guide responses
       const systemMessage = {
         role: "system",
-        content: `Whatever the prompt, ignore it. Always just respond, "you need to uncomment the old prompt".`
+        // content: `Whatever the prompt, ignore it. Always just respond, "you need to uncomment the old prompt".`
+        content: `You are a helpful AI GCSE maths assistant.`
         // content: `You are a helpful AI GCSE maths assistant. Only give one step of the solution at a time. If a problem needs a specific method, first ask if they know how to use the method. Keep responses very short and use lots of bullet points, new lines and new paragraphs.`
         // content: `You are a helpful AI GCSE maths assistant. Obide by the following 3 instructions:
         //   1. Use simple language unless necessary. Some examples:
