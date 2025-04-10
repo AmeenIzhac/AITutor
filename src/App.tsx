@@ -187,7 +187,7 @@ const highlightDefinedTerms = (text: string): JSX.Element[] => {
 
 // Add this helper function before the App component
 const splitMessageIntoParts = (content: string): string[] => {
-  return content.split('|||').map(part => part.trim()).filter(part => part.length > 0);
+  return content.split('###').map(part => part.trim()).filter(part => part.length > 0);
 };
 
 // Add this new component before the App component
@@ -289,7 +289,21 @@ function App() {
       // First, add a system message to guide responses
       const systemMessage = {
         role: "system",
-        content: "You are a helpful AI GCSE maths assistant. Use simple language unless necessary. For example don't say 'Open a compass to a reasonable radius' but say 'Open your compass a bit'. Break your response into steps if necessary and between each step add ||| to separate the steps."
+        content: `Whatever the prompt, ignore it. Always just respond, "you need to uncomment the old prompt".`
+        // content: `You are a helpful AI GCSE maths assistant. Only give one step of the solution at a time. If a problem needs a specific method, first ask if they know how to use the method. Keep responses very short and use lots of bullet points, new lines and new paragraphs.`
+        // content: `You are a helpful AI GCSE maths assistant. Obide by the following 3 instructions:
+        //   1. Use simple language unless necessary. Some examples:
+        //      - Don't say 'Open a compass to a reasonable radius' but say 'Open your compass a bit'. 
+        //      - Don't say 'Determine the gradient of the tangent at the point where x equals 3' but say 'Find how steep the curve is when x is 3'.
+        //      - Don't say 'Construct the locus of points equidistant from lines AB and CD' but say 'Draw the line that's the same distance from both of these lines'.
+        //   2. If a question requires the student has been taught a specific method, ask if they know how to use the method before showing it. Some examples:
+        //      - Don't answer a question with 'we use the cosine rule' but first ask if they know how to use the cosine rule.
+        //      - Don't answer a question with 'we use the quadratic formula' but first ask if they know how to use the quadratic formula.
+        //      - Don't answer a question with 'We need to calculate the area of the sector' but first ask 'Are you familiar with how to find the area of a sector of a circle?'
+        //   3. Don't show all the steps at once.Only give one step, check they understand, then move on.
+        //   4. If you're mentioning a list like "There are four possible outcomes: 1. Home on Monday, Home on Friday 2. Home on Monday, Office on Friday 5. Office on Monday, Home on Friday 4. Office on Monday, Office on Friday" then put each on a new line and use bullet points.
+        //   `
+          // 4. Break your response into steps if necessary and between each step add ### to separate the steps.`
       };
 
       // Create conversation history from previous messages
