@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ImagePlus, Send, Image as ImageIcon } from 'lucide-react';
+import { ImagePlus, Send, Image as ImageIcon, Video, VideoOff } from 'lucide-react';
 import OpenAI from 'openai';
 import posthog from 'posthog-js';
 import dictionary from './dictionary.json';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+import LLMOutputRenderer from './LLMPrettyPrint';
+import { InlineMath, BlockMath } from 'react-katex'
 
 // Initialize PostHog
 posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
@@ -42,147 +46,99 @@ const getTermDefinition = (content: string): string | null => {
   return null;
 };
 
-// Update the highlight style to be fully rounded
-const highlightStyle = {
-  backgroundColor: '#4a9eff',
-  padding: '0 8px',  // Increased horizontal padding
-  borderRadius: '999px',  // Fully rounded
-  cursor: 'help',
-  color: '#000000',
-  fontWeight: 500,
-  display: 'inline-block',
-  lineHeight: '1.5',
-};
+// Update the prettyPrintResponse function return type and implementation
+const prettyPrintResponse = (text: string): JSX.Element => {
+  const parts: (string | JSX.Element)[] = [];
+  const regex = /\$\$(.+?)\$\$/g;
 
-// Add these new components before the App component
-interface TooltipProps {
-  content: string;
-  imageUrl?: string;
-  children: React.ReactNode;
-}
+  let lastIndex = 0;
+  let match;
 
-const Tooltip: React.FC<TooltipProps> = ({ content, imageUrl, children }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isPositioned, setIsPositioned] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
-  const tooltipRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLSpanElement>(null);
+  const processBoldText = (text: string): (string | JSX.Element)[] => {
+    const parts: (string | JSX.Element)[] = [];
+    const boldRegex = /\*\*(.+?)\*\*/g;
+    let lastIdx = 0;
+    let boldMatch;
 
-  const updatePosition = () => {
-    if (!containerRef.current || !tooltipRef.current) return;
-    
-    const wordRect = containerRef.current.getBoundingClientRect();
-    const tooltipRect = tooltipRef.current.getBoundingClientRect();
-    
-    const top = wordRect.top - tooltipRect.height - 8;
-    const left = wordRect.left + (wordRect.width / 2);
+    while ((boldMatch = boldRegex.exec(text)) !== null) {
+      const [fullMatch, innerText] = boldMatch;
+      const matchIdx = boldMatch.index;
 
-    setPosition({ top: top + window.scrollY, left });
-    setIsPositioned(true);
+      // Add text before the bold section
+      if (matchIdx > lastIdx) {
+        parts.push(text.slice(lastIdx, matchIdx));
+      }
+
+      // Add bold text
+      parts.push(<strong key={`bold-${matchIdx}`}>{innerText}</strong>);
+
+      lastIdx = matchIdx + fullMatch.length;
+    }
+
+    // Add any remaining text
+    if (lastIdx < text.length) {
+      parts.push(text.slice(lastIdx));
+    }
+
+    return parts;
   };
 
-  // Add scroll event listener
-  useEffect(() => {
-    if (isVisible) {
-      const handleScroll = () => {
-        requestAnimationFrame(updatePosition);
-      };
+  while ((match = regex.exec(text)) !== null) {
+    const [fullMatch, innerText] = match;
+    const matchIndex = match.index;
 
-      // Listen for scroll events on the chat container and window
-      const chatContainer = document.querySelector('.overflow-y-auto');
-      if (chatContainer) {
-        chatContainer.addEventListener('scroll', handleScroll, { passive: true });
-      }
-      window.addEventListener('scroll', handleScroll, { passive: true });
-
-      // Initial position
-      setIsPositioned(false);
-      requestAnimationFrame(updatePosition);
-
-      return () => {
-        if (chatContainer) {
-          chatContainer.removeEventListener('scroll', handleScroll);
+    // Push plain text before match, handling newlines and section titles
+    if (matchIndex > lastIndex) {
+      const textBeforeMatch = text.slice(lastIndex, matchIndex);
+      const lines = textBeforeMatch.split('\n').filter(line => line.length > 0);
+      
+      lines.forEach((line, index) => {
+        if (line.startsWith('###')) {
+          parts.push(
+            <h2 key={`title-${lastIndex}-${index}`} className="text-xl font-semibold my-2">
+              {processBoldText(line.replace('###', '').trim())}
+            </h2>
+          );
+        } else {
+          parts.push(...processBoldText(line));
         }
-        window.removeEventListener('scroll', handleScroll);
-      };
+        // Only add line break if not a bullet point or if there's more content after
+        if (!line.startsWith('-') || index < lines.length - 1) {
+          parts.push(<br key={`br-${lastIndex}-${index}`} />);
+        }
+      });
     }
-  }, [isVisible]);
 
-  return (
-    <span
-      ref={containerRef}
-      className="relative inline-block"
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => {
-        setIsVisible(false);
-        setIsPositioned(false);
-      }}
-    >
-      {children}
-      {isVisible && (
-        <div
-          ref={tooltipRef}
-          className="fixed z-50 px-4 py-2 text-sm bg-white text-black shadow-lg"
-          style={{
-            top: `${position.top}px`,
-            left: `${position.left}px`,
-            transform: 'translateX(-50%)',
-            maxWidth: imageUrl ? '300px' : '200px',
-            border: '1px solid #e2e2e2',
-            fontWeight: 400,
-            borderRadius: '16px',
-            opacity: isPositioned ? 1 : 0,  // Hide until positioned
-            transition: 'opacity 0.1s ease-in-out',
-            pointerEvents: isPositioned ? 'auto' : 'none', // Prevent interaction until positioned
-          }}
-        >
-          {imageUrl && (
-            <div className="mb-2">
-              <img 
-                src={imageUrl} 
-                alt="Term visualization" 
-                className="w-full rounded-lg"
-                style={{ maxHeight: '150px', objectFit: 'contain' }}
-              />
-            </div>
-          )}
-          {content}
-          <div
-            className="absolute w-2 h-2 bg-white rotate-45"
-            style={{
-              bottom: '-5px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              borderRight: '1px solid #e2e2e2',
-              borderBottom: '1px solid #e2e2e2',
-            }}
-          />
-        </div>
-      )}
-    </span>
-  );
-};
+    // Render LaTeX to HTML string
+    const html = katex.renderToString(innerText, { throwOnError: false });
+    parts.push(<span key={matchIndex} dangerouslySetInnerHTML={{ __html: html }} />);
 
-// Update the highlightDefinedTerms function
-const highlightDefinedTerms = (text: string): JSX.Element[] => {
-  const words = text.split(/(\s+)/);
-  return words.map((word, index) => {
-    const term = dictionary[word.trim()];
-    if (term && word.trim()) {
-      return (
-        <Tooltip 
-          key={index} 
-          content={term.definition}
-          imageUrl={term.imageUrl}
-        >
-          <span style={highlightStyle}>
-            {word}
-          </span>
-        </Tooltip>
-      );
-    }
-    return <React.Fragment key={index}>{word}</React.Fragment>;
-  });
+    lastIndex = matchIndex + fullMatch.length;
+  }
+
+  // Handle remaining text after last match with the same logic
+  if (lastIndex < text.length) {
+    const remainingText = text.slice(lastIndex);
+    const lines = remainingText.split('\n').filter(line => line.length > 0);
+    
+    lines.forEach((line, index) => {
+      if (line.startsWith('###')) {
+        parts.push(
+          <h2 key={`title-end-${index}`} className="text-xl font-semibold my-2">
+            {processBoldText(line.replace('###', '').trim())}
+          </h2>
+        );
+      } else {
+        parts.push(...processBoldText(line));
+      }
+      // Only add line break if not a bullet point or if there's more content after
+      if (!line.startsWith('-') || index < lines.length - 1) {
+        parts.push(<br key={`br-end-${index}`} />);
+      }
+    });
+  }
+
+  return <>{parts}</>;
 };
 
 // Add this helper function before the App component
@@ -190,82 +146,53 @@ const splitMessageIntoParts = (content: string): string[] => {
   return content.split('###').map(part => part.trim()).filter(part => part.length > 0);
 };
 
-// Add this new component before the App component
-const WebcamFeed = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let stream: MediaStream | null = null;
-
-    async function setupWebcam() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-            aspectRatio: 16/9
-          } 
-        });
-        
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (err) {
-        console.log('Webcam error:', err);
-        setError('Camera access denied or not available');
-      }
-    }
-
-    setupWebcam();
-
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, []);
-
-  return (
-    <div className="w-1/2 h-screen fixed right-0 bg-black flex items-center">
-      {error ? (
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="bg-red-500/90 text-white p-4 rounded-lg text-sm">
-            {error}
-          </div>
-        </div>
-      ) : (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="w-full"
-          style={{
-            transform: 'scaleX(-1)', // Mirror the video
-            objectFit: 'contain', // This will maintain aspect ratio with black bars
-          }}
-        />
-      )}
-    </div>
-  );
-};
-
 function App() {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       type: 'bot',
-      content: 'Hello! How can I help you today m9? Feel free to send messages, or paste images (Ctrl+V).',
+      content: 'Hello! How can I help you today?',
     },
   ]);
   const [clickedMessageIds, setClickedMessageIds] = useState<Set<string>>(new Set());
   const [input, setInput] = useState('');
   const [tempImage, setTempImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isWebcamActive, setIsWebcamActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Webcam functionality
+  const startWebcam = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setIsWebcamActive(true);
+      }
+    } catch (err) {
+      console.error('Error accessing webcam:', err);
+    }
+  };
+
+  const stopWebcam = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+      setIsWebcamActive(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      stopWebcam();
+    };
+  }, []);
+
+  // Add this useEffect to render the math when component mounts
 
   const processMessageWithOpenAI = async (content: string, imageUrl?: string) => {
     try {
@@ -290,7 +217,9 @@ function App() {
       const systemMessage = {
         role: "system",
         // content: `Whatever the prompt, ignore it. Always just respond, "you need to uncomment the old prompt".`
-        content: `You are a helpful AI GCSE maths assistant.`
+        content: `You are a helpful AI GCSE maths assistant. Always wrap any LaTeX in double dollar signs. NEVER display LaTeX without putting it in double dollar signs. Make sure to wrap the LaTeX in double dollar signs.`
+        // content: `You are a helpful AI GCSE maths assistant. Always wrap LaTeX in double dollar signs.`
+        // content: `You are a helpful AI GCSE maths assistant.`
         // content: `You are a helpful AI GCSE maths assistant. Only give one step of the solution at a time. If a problem needs a specific method, first ask if they know how to use the method. Keep responses very short and use lots of bullet points, new lines and new paragraphs.`
         // content: `You are a helpful AI GCSE maths assistant. Obide by the following 3 instructions:
         //   1. Use simple language unless necessary. Some examples:
@@ -333,6 +262,7 @@ function App() {
 
       let response;
       if (imageUrl) {
+        const dw = new OpenAI();
         response = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
@@ -351,7 +281,7 @@ function App() {
               ],
             },
           ],
-          max_tokens: 500,
+          // max_tokens: 2000,
           stream: true,
         });
       } else {
@@ -362,7 +292,7 @@ function App() {
             ...conversationHistory,
             { role: "user", content }
           ],
-          max_tokens: 500,
+          // max_tokens: 2000,
           stream: true,
         });
       }
@@ -370,7 +300,6 @@ function App() {
       let fullContent = '';
       for await (const chunk of response) {
         const content = chunk.choices[0]?.delta?.content || '';
-        const definition = getTermDefinition(content);
         fullContent += content;
         
         setMessages(prev => prev.map(msg => 
@@ -379,7 +308,8 @@ function App() {
             : msg
         ));
       }
-
+      console.log('Full content:');
+      console.log(fullContent);
       setMessages(prev => prev.map(msg => 
         msg.id === messageId && msg.type === 'bot'
           ? { ...msg, streaming: false }
@@ -388,6 +318,7 @@ function App() {
 
     } catch (error) {
       // Track error event
+      console.log(error);
       posthog.capture('api_error', {
         error: error.message
       });
@@ -487,142 +418,140 @@ function App() {
   }, []);
 
   return (
-    <div className="h-screen bg-[#212121] flex">
-      {/* Chat section - left half */}
-      <div className="w-1/2 h-full bg-[#212121] flex flex-col">
-        <div 
-          ref={chatContainerRef}
-          className="flex-1 overflow-y-auto px-8 py-4 space-y-4 
-            scrollbar scrollbar-w-2 scrollbar-track-transparent scrollbar-thumb-[#4a4a4a] hover:scrollbar-thumb-[#5a5a5a]
-            [&::-webkit-scrollbar]:w-[6px]
-            [&::-webkit-scrollbar-track]:bg-transparent
-            [&::-webkit-scrollbar-thumb]:bg-[#4a4a4a]
-            [&::-webkit-scrollbar-thumb]:rounded-full
-            [&::-webkit-scrollbar-thumb]:hover:bg-[#5a5a5a]
-            [&::-webkit-scrollbar]:hover:w-[6px]"
-        >
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex flex-col ${
-                message.type === 'user' ? 'items-end' : 'items-start'
-              } space-y-2`}
-            >
-              {message.image && (
-                <div className="mb-2 w-full flex justify-end">
-                  <img
-                    src={message.image}
-                    alt="Uploaded content"
-                    className="max-w-[70%] rounded-lg"
-                  />
-                </div>
-              )}
-              {message.type === 'user' ? (
-                // User message - single bubble
-                <div
-                  className="max-w-[70%] bg-[#303030] text-[#ECECEC] ml-auto rounded-3xl px-5 py-3"
-                >
-                  <p className="text-[15px] leading-relaxed">
-                    {message.content}
-                  </p>
-                </div>
-              ) : (
-                // Bot message - potentially multiple bubbles
-                splitMessageIntoParts(message.content).map((part, index) => (
-                  <div
-                    key={`${message.id}-${index}`}
-                    className={`max-w-[70%] bg-white text-black rounded-3xl px-5 py-3 shadow-sm transition-colors duration-200 
-                      ${clickedMessageIds.has(`${message.id}-${index}`) 
-                        ? 'bg-green-300' 
-                        : 'hover:bg-green-100'
-                      } cursor-pointer`}
-                    onClick={() => {
-                      setClickedMessageIds(prev => {
-                        const newSet = new Set(prev);
-                        const messageKey = `${message.id}-${index}`;
-                        if (newSet.has(messageKey)) {
-                          newSet.delete(messageKey);
-                        } else {
-                          newSet.add(messageKey);
-                        }
-                        return newSet;
-                      });
-                    }}
-                  >
+    <div className="h-screen bg-[#212121] flex overflow-hidden fixed inset-0">
+      {/* Left side - Chat */}
+      <div className="w-1/2 h-full flex flex-col overflow-hidden">
+        <div className="max-w-3xl mx-auto w-full h-full flex flex-col overflow-hidden">
+          <div 
+            ref={chatContainerRef}
+            className="flex-1 py-4 pl-4 pr-6 space-y-4 overflow-y-auto
+              scrollbar scrollbar-w-2 scrollbar-track-transparent scrollbar-thumb-[#4a4a4a] hover:scrollbar-thumb-[#5a5a5a]
+              [&::-webkit-scrollbar]:w-[6px]
+              [&::-webkit-scrollbar-track]:bg-transparent
+              [&::-webkit-scrollbar-thumb]:bg-[#4a4a4a]
+              [&::-webkit-scrollbar-thumb]:rounded-full
+              [&::-webkit-scrollbar-thumb]:hover:bg-[#5a5a5a]
+              [&::-webkit-scrollbar]:hover:w-[6px]"
+          >
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex flex-col ${
+                  message.type === 'user' ? 'items-end' : 'items-start'
+                } space-y-2`}
+              >
+                {message.image && (
+                  <div className="mb-2 w-full flex justify-end">
+                    <img
+                      src={message.image}
+                      alt="Uploaded content"
+                      className="max-w-[70%] rounded-lg"
+                    />
+                  </div>
+                )}
+                {message.type === 'user' ? (
+                  <div className="max-w-[70%] bg-[#303030] text-[#ECECEC] ml-auto rounded-3xl px-5 py-3">
                     <p className="text-[15px] leading-relaxed">
-                      {highlightDefinedTerms(part)}
+                      {message.content}
                     </p>
                   </div>
-                ))
-              )}
-              {message.streaming && message.type === 'bot' && (
-                <div className="max-w-[70%] bg-white text-black rounded-3xl px-5 py-3 shadow-sm">
-                  <p className="text-[15px] leading-relaxed">▊</p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="px-8 pb-1 pt-4">
-          <div className="bg-[#2C2C2C] rounded-3xl overflow-hidden">
-            {tempImage && (
-              <div className="relative p-4 pl-6">
-                <div className="relative inline-block">
-                  <img
-                    src={tempImage}
-                    alt="Preview"
-                    className="h-16 w-16 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={handleRemoveImage}
-                    className="absolute -top-1.5 -right-1.5 bg-gray-700 text-gray-300 rounded-full p-0.5 hover:bg-gray-600 hover:text-white"
-                    title="Remove image"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-3 w-3"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                ) : (
+                  <div className={`max-w-[70%] bg-black text-white rounded-3xl px-5 py-3 shadow-sm`}>
+                    {prettyPrintResponse(message.content)}
+                    {/* <LLMOutputRenderer content={message.content} /> */}
+                    {/* <p>{message.content}</p> */}
+                    {message.streaming && '▊'}
+                  </div>
+                )}
               </div>
-            )}
-            <div className="flex items-center p-3">
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Ask anything"
-                className="w-full bg-transparent text-white focus:outline-none focus:ring-0 placeholder-[#9B9B9B] pl-4"
-                disabled={isLoading}
-              />
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageUpload}
-                accept="image/*"
-                className="hidden"
-              />
-            </div>
+            ))}
           </div>
-          <div className="text-center mt-1">
-            <span className="text-[11px] text-[#9B9B9B]">ChatGPT can make mistakes. Check important info.</span>
+
+          <div className="pb-1 pt-4 flex-shrink-0 bg-[#212121]">
+            <div className="bg-[#2C2C2C] rounded-3xl overflow-hidden mx-4">
+              {tempImage && (
+                <div className="relative p-4 pl-6">
+                  <div className="relative inline-block">
+                    <img
+                      src={tempImage}
+                      alt="Preview"
+                      className="h-16 w-16 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={handleRemoveImage}
+                      className="absolute -top-1.5 -right-1.5 bg-gray-700 text-gray-300 rounded-full p-0.5 hover:bg-gray-600 hover:text-white"
+                      title="Remove image"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-3 w-3"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center p-3">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                  placeholder="Ask anything"
+                  className="w-full bg-transparent text-white focus:outline-none focus:ring-0 placeholder-[#9B9B9B] pl-4"
+                  disabled={isLoading}
+                />
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+            </div>
+            <div className="text-center mt-1">
+              <span className="text-[11px] text-[#9B9B9B]">ChatGPT can make mistakes. Check important info.</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Webcam section - right half */}
-      <WebcamFeed />
+      {/* Right side - Webcam */}
+      <div className="w-1/2 h-full flex flex-col bg-black">
+        <div className="flex-1 relative">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={isWebcamActive ? stopWebcam : startWebcam}
+              className={`p-3 rounded-full transition-colors ${
+                isWebcamActive 
+                  ? 'bg-red-600 hover:bg-red-700' 
+                  : 'bg-gray-800 hover:bg-gray-700'
+              }`}
+            >
+              {isWebcamActive ? (
+                <VideoOff className="w-6 h-6 text-white" />
+              ) : (
+                <Video className="w-6 h-6 text-white" />
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
