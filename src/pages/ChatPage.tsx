@@ -219,7 +219,7 @@ const ChatPage: React.FC = () => {
 
       const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
         role: "system",
-        content: `You are a helpful AI GCSE maths assistant.`
+        content: `You are a helpful AI GCSE maths assistant. Behave like a real tutor. A real tutor doesn't give the entire solution at once, they ask the student small questions and guide them to the answer. Leave out redundant sentences like "Let's think step by step" or "I'm going to solve this question step by step".`
         // content: `You are a helpful AI GCSE maths assistant. Always wrap any LaTeX in double dollar signs. NEVER display LaTeX without putting it in double dollar signs. Make sure to wrap the LaTeX in double dollar signs.`
       };
 
