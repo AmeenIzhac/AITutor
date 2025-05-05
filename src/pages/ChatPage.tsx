@@ -5,6 +5,8 @@ import posthog from 'posthog-js';
 import dictionary from '../dictionary.json';
 import LLMOutputRenderer from '../LLMPrettyPrint';
 import renderMathInElement from 'katex/contrib/auto-render';
+import 'katex/dist/katex.min.css';
+import Latex from 'react-latex-next';
 
 // Initialize PostHog
 posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
@@ -77,8 +79,63 @@ const prettyPrintResponse = (text: string): JSX.Element => {
   return <>{parts}</>;
 };
 
-const splitMessageIntoParts = (content: string): string[] => {
-  return content.split('###').map(part => part.trim()).filter(part => part.length > 0);
+const renderText = (content: string): JSX.Element => {
+  // Look for patterns like "###title:", "###title\n", or "1.title:" and format them as markdown headings
+  // Using a more robust pattern for splitting that ensures multi-digit numbers work
+  const parts = content.split(/(?=###[^:\n]+(?:[:|\n])|(?:\b\d+\.)[^:]+:)/);
+  // const parts = content.split(/(?=###[^:\n]+(?:[:|\n])|(?:\d+\.)[^:]+:)/);
+  
+  return (
+    <>
+      {parts.map((part, index) => {
+        // Check if this part starts with the ### pattern
+        if (part.startsWith('###')) {
+          // Match both formats: ###heading: and ###heading\n
+          const match = part.match(/^###([^:\n]+)(?::|\n)(.*)/s);
+          if (match) {
+            const [_, heading, remainingText] = match;
+            // For heading sections, remove asterisks instead of converting to bold
+            const cleanedHeading = heading.trim().replace(/\*\*(.*?)\*\*/g, '$1');
+            const cleanedText = remainingText.trim().replace(/\*\*(.*?)\*\*/g, '$1');
+            return (
+              <div key={index}>
+                <h3 className="font-bold text-lg mt-2 mb-1">
+                  <Latex>{cleanedHeading}</Latex>
+                </h3>
+                <Latex>{cleanedText}</Latex>
+              </div>
+            );
+          }
+        }
+        
+        // Check if this part starts with a numbered title pattern (e.g., 1.title:, 10.title:, 100.title:)
+        // Using a pattern that will match any number of digits followed by a period
+        const numberedMatch = part.match(/^\s*(\d+\.)([^:]+):(.*)/s);
+        if (numberedMatch) {
+          const [_, number, heading, remainingText] = numberedMatch;
+          // For numbered title sections, remove asterisks from both heading and content
+          const cleanedHeading = heading.trim().replace(/\*\*(.*?)\*\*/g, '$1');
+          const cleanedText = remainingText.trim().replace(/\*\*(.*?)\*\*/g, '$1');
+          return (
+            <div key={index}>
+              <h4 className="font-bold text-base mt-1.5 mb-0.5">
+                {number} <Latex>{cleanedHeading}</Latex>
+              </h4>
+              <Latex>{cleanedText}</Latex>
+            </div>
+          );
+        }
+        
+        // Default case: render with Latex and process bold text
+        return <Latex key={index}>{processBoldText(part)}</Latex>;
+      })}
+    </>
+  );
+};
+
+// Helper function to process bold text (** **) in content
+const processBoldText = (text: string): string => {
+  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 };
 
 const ChatPage: React.FC = () => {
@@ -162,7 +219,8 @@ const ChatPage: React.FC = () => {
 
       const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
         role: "system",
-        content: `You are a helpful AI GCSE maths assistant. Always wrap any LaTeX in double dollar signs. NEVER display LaTeX without putting it in double dollar signs. Make sure to wrap the LaTeX in double dollar signs.`
+        content: `You are a helpful AI GCSE maths assistant.`
+        // content: `You are a helpful AI GCSE maths assistant. Always wrap any LaTeX in double dollar signs. NEVER display LaTeX without putting it in double dollar signs. Make sure to wrap the LaTeX in double dollar signs.`
       };
 
       const conversationHistory = messages
@@ -423,12 +481,12 @@ const ChatPage: React.FC = () => {
                     {message.type === 'user' ? (
                       <div className="max-w-[70%] bg-[#303030] text-[#ECECEC] ml-auto rounded-3xl px-5 py-3">
                         <p className="text-[15px] leading-relaxed">
-                          {message.content}
+                          {renderText(message.content)}
                         </p>
                       </div>
                     ) : (
                       <div className={`max-w-[70%] bg-black text-white rounded-3xl px-5 py-3 shadow-sm`}>
-                        {message.content}
+                        {renderText(message.content)}
                         {message.streaming && '▊'}
                       </div>
                     )}
