@@ -95,6 +95,7 @@ const ChatPage: React.FC = () => {
   const [tempImage, setTempImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isWebcamActive, setIsWebcamActive] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -120,11 +121,26 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    return () => {
-      stopWebcam();
-    };
-  }, []);
+  const captureImage = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0);
+        const imageData = canvas.toDataURL('image/png');
+        
+        // Automatically download the image
+        const link = document.createElement('a');
+        link.href = imageData;
+        link.download = `webcam-capture-${new Date().toISOString()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    }
+  };
 
   const processMessageWithOpenAI = async (content: string, imageUrl?: string) => {
     try {
@@ -346,7 +362,7 @@ const ChatPage: React.FC = () => {
         <div className={`${isWebcamActive ? 'w-1/2' : 'w-full'} h-full flex flex-col overflow-hidden transition-all duration-300`}>
           <div className="relative h-full">
             {/* Camera toggle button */}
-            <div className="absolute top-4 right-4 z-10">
+            <div className="absolute top-4 right-4 z-10 flex gap-2">
               <button
                 onClick={isWebcamActive ? stopWebcam : startWebcam}
                 className={`p-3 rounded-full transition-colors ${
@@ -361,6 +377,18 @@ const ChatPage: React.FC = () => {
                   <Video className="w-6 h-6 text-white" />
                 )}
               </button>
+              {isWebcamActive && (
+                <button
+                  onClick={captureImage}
+                  className="p-3 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors"
+                  title="Take picture"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+              )}
             </div>
 
             {/* Chat content */}
@@ -467,19 +495,17 @@ const ChatPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Camera view - only shown when camera is active */}
-        {isWebcamActive && (
-          <div className="w-1/2 h-full flex flex-col bg-black transition-all duration-300">
-            <div className="flex-1 relative">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                className="w-full h-full object-cover"
-              />
-            </div>
+        {/* Camera view - conditionally shown */}
+        <div className={`${isWebcamActive ? 'w-1/2' : 'w-0'} h-full flex flex-col bg-black transition-all duration-300 overflow-hidden`}>
+          <div className="flex-1 relative">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="w-full h-full object-cover"
+            />
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
